@@ -7,87 +7,56 @@
 
 #include <cstdio>
 #include <vector>
-#include <fcntl.h>
+#include <fstream>
 #include "size_const.h"
+#include "metric_file_manager.h"
+#include "../action_manager.h"
+#include "metric_data.h"
 
-class MetricManager
+class MetricManager: public ActionManager
 {
 public:
+    //constructor
     MetricManager();
 
-    explicit MetricManager(const char* filename);
+    ~MetricManager();
 
-    void insert_metric(const char* metric_name, double_t metric_value);
+
+    void                insert_metric(const char* metric_name, MetricData* metric_data);
+    void                create_metric(const char* metric_name);
 
 private:
-    const char* filename;
+    const char*         filename;
 
-    int32_t file_descriptor;
 
-    std::vector<Metric>* metric_list;
+    MetricFileManager*  m_file_manager;
 
-    off_t file_length;
-
-    Metric* seek_for_metric(const char* metric_name);
 
 };
 
 MetricManager::MetricManager():
         filename("metric.db")
 {
-
-    this->file_descriptor = open(this->filename,
-                                 O_RDWR |
-                                 O_CREAT,
-                                 S_IWUSR |
-                                 S_IRUSR);
-
-    if (this->file_descriptor == -1)
-        std::cout << "File cannot be opened" << std::endl;
-
-    this->metric_list = new std::vector<Metric>();
-//    this->file_length = lseek(this->file_descriptor, 0, SEEK_END);
+    m_file_manager = new MetricFileManager(this->filename);
 }
 
-MetricManager::MetricManager(const char* filename):
-    filename(filename)
+MetricManager::~MetricManager()
 {
-
-
 }
 
-void MetricManager::insert_metric(const char* metric_name, double_t metric_value)
+void MetricManager::insert_metric(const char* metric_name, MetricData* metric_data)
 {
+    Metric* metric;
 
-    Metric* metric = new Metric(metric_name);
 
-    this->metric_list->push_back(*metric);
-
-    if (this->seek_for_metric(metric_name) != NULL)
+    if (metric = this->m_file_manager->get_metric_by_name(metric_name))
     {
+    } else {
+//         Create new metric and write down it into db
+        metric = new Metric(metric_name);
+        this->m_file_manager->add_new_metric(metric_name);
 
-    } else
-    {
-        ssize_t bytes_written =
-                write(this->file_descriptor, (*metric)(), METRIC_ROW_SIZE);
-
-        if (bytes_written <= 0)
-        {
-            std::cout << "Error writing into file" << std::endl;
-        }
     }
-
-//    ssize_t bytes_written =
-//            write(this->)
-
-
-//    ssize_t bytes_written =
-//            write(this->file_descriptor, , METRIC_ROW_SIZE);
-}
-
-Metric* MetricManager::seek_for_metric(const char* metric_name)
-{
-    return NULL;
 }
 
 #endif //TSDB_METRIC_MANAGER_H

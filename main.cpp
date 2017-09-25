@@ -3,16 +3,12 @@
 
 using namespace std;
 
-void test_db()
-{
-
-}
 
 
 int main() {
 
     MetricManager* metric_manager = new MetricManager();
-    metric_manager->insert_metric("testmetric", 24.2D);
+    metric_manager->insert_metric("test", new MetricData());
 
     return 0;
 }
