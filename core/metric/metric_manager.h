@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <vector>
 #include <fstream>
-#include "size_const.h"
 #include "metric_file_manager.h"
 #include "../action_manager.h"
 #include "metric_data.h"
@@ -22,7 +21,7 @@ public:
     ~MetricManager();
 
 
-    void                    insert_metric(const char* metric_name, MetricData* metric_data);
+    void                    insert_metric(const char* metric_name, MetricData& metric_data);
     void                    create_metric(const char* metric_name);
     void                    delete_metric(const char* metric_name);
 
@@ -44,25 +43,35 @@ MetricManager::~MetricManager()
 {
 }
 
-void MetricManager::insert_metric(const char* metric_name, MetricData* metric_data)
+void MetricManager::insert_metric(const char* metric_name, MetricData& metric_data)
 {
+
+    if (strlen(metric_name) > METRIC_NAME_SIZE)
+        return;
+
     Metric* metric;
 
     if (metric = this->m_file_manager->get_metric_by_name(metric_name))
     {
-    } else {
-
-        //Create new metric and write down it into db
-        metric = new Metric(metric_name);
-
-
-        this->m_file_manager->add_new_metric(metric_name);
-
+        metric->append_metric(metric_data);
     }
+//    else {
+//        std::cout << "test";
+//
+//        //Create new metric and write down it into db
+//        metric = new Metric(metric_name);
+//
+////        this->m_file_manager->add_new_metric(metric_name);
+////
+////        metric->append_metric(metric_data);
+//    }
+//
+//    delete[](metric);
 }
 
 void MetricManager::create_metric(const char* metric_name)
 {
+    std::cout << metric_name;
     if (strlen(metric_name) > METRIC_NAME_SIZE)
         return;
     if (this->m_file_manager->get_metric_by_name(metric_name))

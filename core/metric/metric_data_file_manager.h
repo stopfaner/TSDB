@@ -16,7 +16,7 @@ public:
     // constructor
     explicit MetricDataFileManager(const char* filename);
 
-    void                        insert_metric(MetricData* metric_data);
+    void                        insert_metric(MetricData& metric_data);
     void                        insert_metric(std::vector<MetricData>* metrics);
 
 private:
@@ -27,15 +27,27 @@ private:
 
 MetricDataFileManager::MetricDataFileManager(const char *filename)
 {
-    this->file_stream = this->get_or_create_file(filename);
+    this->filename = filename;
+
+    file_stream.open(this->filename,std::ios::out |
+                                     std::ios::app |
+                                     std::ios::in |
+                                     std::ifstream::ate |
+                                     std::ifstream::binary);
+
 }
 
 
-void MetricDataFileManager::insert_metric(MetricData* metric_data)
+void MetricDataFileManager::insert_metric(MetricData& metric_data)
 {
-    this->file_stream = get_or_create_file(this->filename);
+    if (this->file_stream.is_open())
+    {
+        std::string metric = metric_data();
 
-
+        this->file_stream.write(metric.c_str(), metric.length());
+        this->file_stream.write("\n", 1);
+        this->file_stream.close();
+    }
 }
 
 void MetricDataFileManager::insert_metric(std::vector<MetricData>* metrics)
@@ -48,14 +60,27 @@ std::fstream MetricDataFileManager::get_or_create_file(const char* filename)
 {
     this->filename = filename;
 
+    std::fstream file_stream;
+
     if (!this->file_exists(this->filename))
     {
-        std::fstream fs;
-        fs.open(this->filename, std::ios::out);
-        fs.close();
+        // creating new file
+        file_stream.open(this->filename, std::ios::out |
+                                                std::ios::app |
+                                                std::ios::in |
+                                                std::ifstream::ate |
+                                                std::ifstream::binary);
+        file_stream.close();
     }
 
-    return std::fstream(filename, std::ios::in | std::ios::out);
+    //open new file
+    file_stream.open(this->filename, std::ios::out |
+                                            std::ios::app |
+                                            std::ios::in |
+                                            std::ifstream::ate |
+                                            std::ifstream::binary);
+
+    return file_stream;
 }
 
 
