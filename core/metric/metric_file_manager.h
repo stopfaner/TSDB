@@ -63,9 +63,6 @@ Metric* MetricFileManager::add_new_metric(const char* metric_name)
     // Generating new metric by name
     auto metric = new Metric(metric_name);
 
-    this->file_stream.seekg(METRIC_ROW_SIZE + 1);
-
-    this->file_stream.write("\n", 1);
     this->file_stream.write(metric->get_metric_name(), metric->get_metric_name_size());
     this->file_stream.write(uuids::to_string(metric->get_metric_uuid()).c_str(), metric->get_metric_uuid_size());
     this->file_stream.write(std::to_string(metric->get_creation_time()).c_str(), metric->get_creation_time_size());
@@ -80,25 +77,27 @@ Metric* MetricFileManager::add_new_metric(const char* metric_name)
 Metric* MetricFileManager::get_metric_by_name(const char* metric_name)
 {
     uint32_t lines_count = this->get_metric_file_size() / (METRIC_ROW_SIZE + 1);
+    if (lines_count == 0)
+        return NULL;
+
     int32_t offset_index = this->metric_binary_search(0, lines_count - 1, metric_name);
 
     if (offset_index == -1)
         return NULL;
 
-    auto metric = new Metric();
-
     uint32_t offset = offset_index * (METRIC_ROW_SIZE + 1);
 
-    metric->set_metric_name(this->get_name_with_offset(offset).c_str());
-    metric->set_metric_uuid(lexical_cast<uuids::uuid> (this->get_uuid_with_offset(offset)));
-    metric->set_creation_time(lexical_cast<std::time_t>(this->get_creation_with_offset(offset)));
+    auto metric = new Metric(this->get_name_with_offset(offset).c_str(),
+                             lexical_cast<uuids::uuid> (this->get_uuid_with_offset(offset)),
+                             lexical_cast<std::time_t>(this->get_creation_with_offset(offset)));
 
-        return metric;
+    return metric;
 }
 
 
 int32_t MetricFileManager::metric_binary_search(uint32_t left, uint32_t right, const char* metric_name)
 {
+
     if (left <= right)
     {
         uint32_t middle = left + (right - left) / 2;
@@ -108,6 +107,7 @@ int32_t MetricFileManager::metric_binary_search(uint32_t left, uint32_t right, c
 
         if (strcmp(this->get_name_with_offset(middle * (METRIC_ROW_SIZE + 1)).c_str(), metric_name) < 0)
             return this->metric_binary_search(middle + 1, right, metric_name);
+
         else
             return this->metric_binary_search(left, middle - 1, metric_name);
     }

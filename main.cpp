@@ -8,7 +8,7 @@ using namespace std;
 int main() {
 
     MetricManager* metric_manager = new MetricManager();
-    metric_manager->create_metric("mama");
+    metric_manager->create_metric("ctest42");
 
     return 0;
 }

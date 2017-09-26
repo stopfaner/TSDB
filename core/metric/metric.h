@@ -36,6 +36,7 @@ public:
     //constructor
     Metric();
     explicit Metric(const char* metric_name);
+    explicit Metric(const char* metric_name, uuids::uuid metric_uuid, std::time_t creation_time);
     ~Metric();
 
     // UUID setters and getters
@@ -63,12 +64,27 @@ Metric::Metric()
 
 
 Metric::Metric(const char* metric_name):
-        metric_uuid(boost::uuids::basic_random_generator<boost::mt19937>()()),
+        metric_uuid(uuids::basic_random_generator<boost::mt19937>()()),
         creation_time(std::time(nullptr))
 {
     if (strlen(metric_name) < METRIC_NAME_SIZE) {
         strcpy(this->metric_name, metric_name);
     }
+
+    this->m_data_file_manager = new MetricDataFileManager(uuids::to_string(this->metric_uuid).c_str());
+}
+
+
+Metric::Metric(const char* metric_name, uuids::uuid metric_uuid, std::time_t creation_time)
+{
+    if (strlen(metric_name) < METRIC_NAME_SIZE) {
+        strcpy(this->metric_name, metric_name);
+    }
+
+    this->metric_uuid = metric_uuid;
+    this->creation_time = creation_time;
+
+    this->m_data_file_manager = new MetricDataFileManager(uuids::to_string(this->metric_uuid).c_str());
 }
 
 Metric::~Metric()
