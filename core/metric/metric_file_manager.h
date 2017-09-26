@@ -24,19 +24,21 @@ public:
     // constructor
     explicit MetricFileManager(const char* filename);
 
-    Metric*         get_metric_by_name(const char* metric_name);
+    Metric*                 get_metric_by_name(const char* metric_name);
 
-    Metric*         add_new_metric(const char* metric_name);
+    Metric*                 add_new_metric(const char* metric_name);
 
 private:
 
-    int32_t         metric_binary_search(uint32_t left, uint32_t right, const char* metric_name);
+    int32_t                 metric_binary_search(uint32_t left, uint32_t right, const char* metric_name);
 
-    uint32_t        get_metric_file_size();
+    uint32_t                get_metric_file_size();
 
-    std::string     get_name_with_offset(uint32_t offset);
-    std::string     get_uuid_with_offset(uint32_t offset);
-    std::string     get_creation_with_offset(uint32_t offset);
+    std::string             get_name_with_offset(uint32_t offset);
+    std::string             get_uuid_with_offset(uint32_t offset);
+    std::string             get_creation_with_offset(uint32_t offset);
+
+    std::fstream            get_or_create_file(const char* filename) override;
 
 };
 
@@ -54,12 +56,16 @@ MetricFileManager::MetricFileManager(const char *filename)
 }
 
 
-
 Metric* MetricFileManager::add_new_metric(const char* metric_name)
 {
+
+    //TODO: add
     // Generating new metric by name
     auto metric = new Metric(metric_name);
 
+    this->file_stream.seekg(METRIC_ROW_SIZE + 1);
+
+    this->file_stream.write("\n", 1);
     this->file_stream.write(metric->get_metric_name(), metric->get_metric_name_size());
     this->file_stream.write(uuids::to_string(metric->get_metric_uuid()).c_str(), metric->get_metric_uuid_size());
     this->file_stream.write(std::to_string(metric->get_creation_time()).c_str(), metric->get_creation_time_size());
@@ -167,6 +173,11 @@ uint32_t MetricFileManager::get_metric_file_size()
     return (uint32_t)-1;
 }
 
+
+std::fstream MetricFileManager::get_or_create_file(const char* filename)
+{
+
+}
 
 
 #endif //TSDB_METRIC_FILE_MANAGER_H

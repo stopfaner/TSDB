@@ -11,13 +11,14 @@ class FileManager
 {
 protected:
 
-    const char* filename;
+    const char*                 filename;
 
-    std::fstream file_stream;
+    std::fstream                file_stream;
 
+    std::string                 trim_string(char* str);
 
-    std::string trim_string(char* str);
-
+    virtual std::fstream        get_or_create_file(const char* filename) = 0;
+//    virtual void                delete_file(const char* filename);
 };
 
 
