@@ -1,16 +1,25 @@
+
+// include headers that implement a archive in simple text format
+#include <fstream>
 #include <iostream>
-#include "core/metric/metric_manager.h"
+#include "core/types/field_time.h"
+#include "core/types/field_uuid.h"
+#include "core/types/field_name.h"
+#include "core/types/field_metric.h"
+#include "core/metric_engine/metric_manager.h"
 
 using namespace std;
 
 
-
 int main() {
 
-    MetricManager* metric_manager = new MetricManager();
-    MetricData data(255.5);
+    MetricManager* manager = new MetricManager();
+// for sample only
+//    for (auto& t : *manager->get_loaded_map())
+//    {
+//        cout <<"OLD" << t.second.get_metric_field()->get_metric_name() << endl;
+//    }
 
-    metric_manager->insert_metric("datalife", data);
 
     return 0;
 }
